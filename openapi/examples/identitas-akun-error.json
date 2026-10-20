@@ -1,0 +1,4 @@
+{
+  "code": "UNAUTHORIZED",
+  "message": "Token tidak ada, tidak valid, atau sudah kedaluwarsa."
+}

@@ -1,0 +1,27 @@
+name: check
+
+on: [push, pull_request]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Pasang dependensi
+        run: npm ci
+
+      - name: Validasi openapi.yaml
+        run: npm run validate
+
+      - name: Jalankan mock server, uji, lalu matikan
+        run: |
+          npx prism mock openapi/openapi.yaml -p 4010 &
+          SERVER_PID=$!
+          npx --yes wait-on tcp:4010 --timeout 30000
+          npm test
+          kill $SERVER_PID
