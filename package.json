@@ -1,0 +1,16 @@
+{
+  "name": "f1-identitas-service",
+  "version": "0.3.0",
+  "description": "Kontrak API dan mock server kelompok F-1 (Identitas, akun, dan hak akses) — Proyek Perangkat Lunak ERP PT Anaheim Nimbus Universal.",
+  "private": true,
+  "scripts": {
+    "validate": "redocly lint openapi/openapi.yaml",
+    "mock": "prism mock openapi/openapi.yaml -p 4010",
+    "test": "node test/smoke-test.js"
+  },
+  "devDependencies": {
+    "@stoplight/prism-cli": "^5.8.2",
+    "@redocly/cli": "^1.25.11",
+    "wait-on": "^8.0.1"
+  }
+}

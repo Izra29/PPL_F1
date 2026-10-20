@@ -1,0 +1,540 @@
+openapi: 3.0.3
+info:
+  title: F-1 — Identitas, Akun, dan Hak Akses API
+  description: >-
+    Kontrak API kelompok F-1 (Kelas F, Kelompok 1) untuk modul Identitas,
+    akun, dan hak akses — Proyek Perangkat Lunak ERP PT Anaheim Nimbus
+    Universal. Seluruh operasi di bawah ini adalah API yang benar-benar
+    disediakan kelompok F-1 (lihat "Daftar Kontrak API yang Akan Dibuat",
+    v0.1): login dan reset password dipakai antarmuka F-1 sendiri;
+    manajemen akun dipakai antarmuka admin (COO/CTO/Admin) serta dipicu
+    F-2; endpoint identitas dan endpoint peran dikonsumsi langsung oleh
+    F-2 s.d. F-5, D, dan E sebagai sumber data pengguna kanonis (Q-12).
+    ID entitas (akunId, employeeId, dst.) memakai string UUID v7 yang
+    diterbitkan layanan pemilik, sesuai kesepakatan kelas pertemuan 2
+    ("Usulan kontrak identitas data") — menggantikan konvensi prefix
+    (AKN-, EMP-, dst.) yang sebelumnya dipakai draf F-1.
+  version: 0.3.0
+  contact:
+    name: Kelompok F-1 (Kelas F)
+    email: nauval@example.invalid
+servers:
+  - url: https://api.anaheim-nimbus.internal/api/v1
+    description: Lingkungan pengembangan (mock), belum dideploy
+
+tags:
+  - name: Auth
+    description: Login dan pemulihan password (FTR-F1-01 / FTR-F1-02)
+  - name: Akun
+    description: Manajemen siklus hidup akun oleh COO/CTO/Admin (FTR-F1-03)
+  - name: Identitas
+    description: Endpoint identitas dan peran pengguna, dikonsumsi modul lain (FTR-F1-06, FTR-F1-04)
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      operationId: loginPengguna
+      tags: [Auth]
+      summary: Login pengguna (API-F1-02 / FTR-F1-01)
+      description: Dipakai antarmuka login F-1 sendiri (semua peran).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login berhasil; sesi dan token diterbitkan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                berhasil:
+                  $ref: '#/components/examples/LoginSuccess'
+        '401':
+          description: Email/username atau password salah.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                kredensialSalah:
+                  $ref: '#/components/examples/LoginError'
+        '403':
+          description: Akun nonaktif atau terkunci sementara karena percobaan gagal berulang.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/forgot-password:
+    post:
+      operationId: mintaResetPassword
+      tags: [Auth]
+      summary: Meminta link reset password (API-F1-03 / FTR-F1-02, langkah 1)
+      description: Selalu merespons 200 dengan pesan netral walau email tidak terdaftar, untuk mencegah kebocoran info akun.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: nauval.rizki@anaheimnimbus.co.id
+      responses:
+        '200':
+          description: Permintaan diterima; email dikirim jika alamat terdaftar.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Jika email terdaftar, tautan reset telah dikirim.
+        '400':
+          description: Format email tidak valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/reset-password:
+    post:
+      operationId: resetPassword
+      tags: [Auth]
+      summary: Menetapkan password baru dari token reset (API-F1-03 / FTR-F1-02, langkah 2)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, passwordBaru]
+              properties:
+                token:
+                  type: string
+                  example: a1b2c3d4-reset-token
+                passwordBaru:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: Rahasia#2026
+      responses:
+        '200':
+          description: Password berhasil diperbarui; sesi lama tidak valid lagi.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password berhasil diperbarui.
+        '422':
+          description: Password baru tidak memenuhi aturan kompleksitas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '410':
+          description: Token reset kedaluwarsa atau sudah pernah dipakai.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /akun:
+    get:
+      operationId: daftarAkun
+      tags: [Akun]
+      summary: Melihat daftar akun (API-F1-04 / FTR-F1-03)
+      description: Dipakai antarmuka manajemen akun COO/CTO/Admin.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/StatusAkun'
+        - name: search
+          in: query
+          required: false
+          description: Mencari berdasarkan nama, username, atau email.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daftar akun.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Akun'
+        '403':
+          description: Pemanggil bukan COO/CTO/Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: buatAkun
+      tags: [Akun]
+      summary: Membuat akun baru untuk pegawai/tenaga ahli (API-F1-04 / FTR-F1-03)
+      description: Dipicu Admin setelah data pegawai/tenaga ahli terdaftar di F-2.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkunBaru'
+      responses:
+        '201':
+          description: Akun berhasil dibuat.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Akun'
+        '409':
+          description: Username atau email sudah terdaftar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Pemanggil bukan COO/CTO/Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /akun/{akunId}:
+    put:
+      operationId: ubahStatusAtauPeranAkun
+      tags: [Akun]
+      summary: Mengubah status (nonaktifkan/aktifkan) atau peran akun (API-F1-04 / FTR-F1-03)
+      parameters:
+        - name: akunId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AkunUbahan'
+      responses:
+        '200':
+          description: Akun berhasil diperbarui.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Akun'
+        '404':
+          description: akunId tidak ditemukan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Pemanggil bukan COO/CTO/Admin.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /akun/{akunId}/peran:
+    get:
+      operationId: getPeranAkun
+      tags: [Identitas]
+      summary: Memeriksa peran/hak akses sebuah akun (API-F1-05 / FTR-F1-04)
+      description: >-
+        Dipanggil seluruh modul (middleware otorisasi) untuk memvalidasi
+        hak akses per request; service-to-service, memakai token milik
+        layanan pemanggil.
+      parameters:
+        - name: akunId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1
+      responses:
+        '200':
+          description: Peran dan status akun ditemukan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  akunId:
+                    type: string
+                    format: uuid
+                    example: 01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1
+                  kodePeran:
+                    $ref: '#/components/schemas/KodePeran'
+                  status:
+                    $ref: '#/components/schemas/StatusAkun'
+        '404':
+          description: akunId tidak ditemukan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token tidak ada atau tidak valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /identitas/akun/{akunId}:
+    get:
+      operationId: getIdentitasAkun
+      tags: [Identitas]
+      summary: Mengambil data identitas sebuah akun (API-F1-01 / FTR-F1-06)
+      description: >-
+        Sumber data pengguna tunggal untuk seluruh kelompok (disepakati
+        Q-12, pertemuan mitra 27/09/2026). Dipanggil F-2, F-3, F-4, F-5,
+        D-1, D-2, E-1, E-3 — baik oleh pengguna akhir untuk akunId milik
+        dirinya sendiri, maupun service-to-service oleh backend modul
+        lain untuk akunId pengguna lain.
+      parameters:
+        - name: akunId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1
+      responses:
+        '200':
+          description: Identitas akun ditemukan dan token valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IdentitasPengguna'
+              examples:
+                berhasil:
+                  $ref: '#/components/examples/IdentitasAkunSuccess'
+        '400':
+          description: Format akunId salah.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Token tidak ada atau tidak valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                tanpaToken:
+                  $ref: '#/components/examples/IdentitasAkunError'
+        '404':
+          description: akunId tidak dikenal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token diterbitkan oleh POST /auth/login; berisi klaim akunId dan kodePeran.
+
+  schemas:
+    StatusAkun:
+      type: string
+      enum: [aktif, nonaktif, terkunci]
+
+    KodePeran:
+      type: string
+      enum: [CEO, COO, CTO, ADMIN, AM, PM, KARYAWAN, TENAGA_AHLI]
+
+    LoginRequest:
+      type: object
+      required: [emailAtauUsername, password]
+      properties:
+        emailAtauUsername:
+          type: string
+          example: nauval.rizki@anaheimnimbus.co.id
+        password:
+          type: string
+          format: password
+          example: Rahasia#2026
+        ingatSaya:
+          type: boolean
+          default: false
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiJ9.contoh-token-fiktif
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          description: Masa berlaku token dalam detik.
+          example: 3600
+        akun:
+          $ref: '#/components/schemas/AkunRingkas'
+
+    AkunRingkas:
+      type: object
+      properties:
+        akunId:
+          type: string
+          format: uuid
+          example: 01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1
+        nama:
+          type: string
+          example: Yuril Salsabila
+        kodePeran:
+          $ref: '#/components/schemas/KodePeran'
+
+    AkunBaru:
+      type: object
+      required: [employeeId, kodePeran]
+      properties:
+        employeeId:
+          type: string
+          description: ID pegawai/tenaga ahli dari F-2; divalidasi lewat API F-2.
+          example: 01929b4a-5f10-7a22-9d44-3c8f1b2e7a90
+        kodePeran:
+          $ref: '#/components/schemas/KodePeran'
+        username:
+          type: string
+          nullable: true
+          description: Jika kosong, dibuat otomatis dari data F-2.
+          example: dwi.saputra
+
+    AkunUbahan:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusAkun'
+        kodePeran:
+          $ref: '#/components/schemas/KodePeran'
+
+    Akun:
+      type: object
+      properties:
+        akunId:
+          type: string
+          format: uuid
+          example: 01929b4a-83a1-7d55-8b12-9f7c2e4a6b10
+        employeeId:
+          type: string
+          format: uuid
+          example: 01929b4a-5f10-7a22-9d44-3c8f1b2e7a90
+        nama:
+          type: string
+          example: Dwi Saputra
+        username:
+          type: string
+          example: dwi.saputra
+        email:
+          type: string
+          format: email
+          example: dwi.saputra@anaheimnimbus.co.id
+        kodePeran:
+          $ref: '#/components/schemas/KodePeran'
+        status:
+          $ref: '#/components/schemas/StatusAkun'
+        dibuatPada:
+          type: string
+          format: date-time
+          example: '2026-10-12T03:00:00Z'
+
+    IdentitasPengguna:
+      type: object
+      description: >-
+        Field yang dikirim ke konsumen dibatasi hanya yang dibutuhkan
+        untuk identifikasi dan otorisasi; passwordHash dan
+        percobaanGagalLogin tidak pernah disertakan.
+      properties:
+        akunId:
+          type: string
+          format: uuid
+          example: 01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1
+        employeeId:
+          type: string
+          format: uuid
+          example: 01929b4a-5f10-7a22-9d44-3c8f1b2e7a90
+        nama:
+          type: string
+          example: Yuril Salsabila
+        kodePeran:
+          $ref: '#/components/schemas/KodePeran'
+        jabatan:
+          type: string
+          nullable: true
+          example: Chief Operating Officer
+        status:
+          $ref: '#/components/schemas/StatusAkun'
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_CREDENTIALS
+        message:
+          type: string
+          example: Email/username atau password salah.
+        detail:
+          type: string
+          nullable: true
+
+  examples:
+    LoginSuccess:
+      value:
+        accessToken: eyJhbGciOiJIUzI1NiJ9.contoh-token-fiktif
+        tokenType: Bearer
+        expiresIn: 3600
+        akun:
+          akunId: 01929b4a-71f0-7c10-9a3d-5e2b8f1c4d60
+          nama: Yuril Salsabila
+          kodePeran: COO
+    LoginError:
+      value:
+        code: INVALID_CREDENTIALS
+        message: "Email/username atau password salah. Sisa percobaan: 3."
+    IdentitasAkunSuccess:
+      value:
+        akunId: 01929b4a-83a1-7d55-8b12-9f7c2e4a6b10
+        employeeId: 01929b4a-5f10-7a22-9d44-3c8f1b2e7a90
+        nama: Dwi Saputra
+        kodePeran: KARYAWAN
+        jabatan: Staf Operasional
+        status: aktif
+    IdentitasAkunError:
+      value:
+        code: UNAUTHORIZED
+        message: Token tidak ada, tidak valid, atau sudah kedaluwarsa.

@@ -1,0 +1,104 @@
+# F-1 — Identitas, Akun, dan Hak Akses
+
+Repositori kelompok F-1 (Kelas F, Kelompok 1), Proyek Perangkat Lunak ERP
+PT Anaheim Nimbus Universal. Berisi kontrak OpenAPI, mock server yang
+dapat dijalankan, data fiktif (seed), dan pemeriksaan CI dasar — bukti
+yang diminta pada pertemuan 3.
+
+Detail kontrak API (daftar operasi, keputusan lintas layanan, cakupan)
+ada di [`openapi/README.md`](openapi/README.md). Berkas ini menjelaskan
+cara menjalankan repo-nya.
+
+## Isi folder
+
+```
+f1-identitas-service/
+├── .env.example                 # Konfigurasi contoh — salin jadi .env
+├── .github/workflows/check.yml  # CI: validasi openapi, jalankan mock, uji dasar
+├── openapi/
+│   ├── openapi.yaml             # Spesifikasi OpenAPI 3.0.3 (sumber utama)
+│   ├── README.md                # Rincian kontrak API
+│   └── examples/                # Contoh respons sukses/gagal
+├── seed/
+│   └── seed-akun.json           # Data fiktif: 8 peran + 5 akun contoh (status beragam)
+├── test/
+│   └── smoke-test.js            # Uji dasar terhadap mock server yang berjalan
+└── package.json
+```
+
+## 1. Prasyarat
+
+- Node.js 18 atau lebih baru (dipakai mock server dan uji dasar; tidak perlu database untuk versi mock ini).
+- Belum perlu database sungguhan — mock server menjawab memakai contoh/skema dari `openapi.yaml`, bukan data asli. `DATABASE_URL` pada `.env.example` disiapkan untuk langkah berikutnya (backend asli).
+
+## 2. Konfigurasi
+
+```bash
+cp .env.example .env
+```
+
+Nilai bawaan di `.env.example` sudah cukup untuk menjalankan mock server
+secara lokal; ganti `JWT_SECRET` bila nanti dipakai pada backend asli.
+
+## 3. Instalasi dan seed data
+
+```bash
+npm install
+```
+
+Data fiktif ada langsung di `seed/seed-akun.json` (tidak perlu perintah
+migrasi/seed terpisah untuk versi mock ini, karena belum ada database).
+Berkas ini berisi 8 peran dan 5 akun contoh dengan status beragam
+(aktif, terkunci, nonaktif) agar reviewer bisa menguji skenario gagal
+tanpa perlu membuat data sendiri.
+
+## 4. Menjalankan aplikasi (mock server)
+
+```bash
+npm run mock
+```
+
+Mock server (Prism) berjalan di `http://127.0.0.1:4010` dan menjawab
+seluruh path pada `openapi.yaml` memakai contoh/skema yang sudah
+ditulis — tanpa perlu backend asli. Contoh pemanggilan dari terminal
+lain:
+
+```bash
+curl -X POST http://127.0.0.1:4010/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"emailAtauUsername":"yuril.salsabila@anaheimnimbus.co.id","password":"Rahasia#2026"}'
+
+curl http://127.0.0.1:4010/identitas/akun/01929b4a-83a1-7d55-8b12-9f7c2e4a6b10 \
+  -H "Authorization: Bearer token-fiktif"
+```
+
+## 5. Menjalankan uji dan mengembalikan lingkungan
+
+Di terminal lain (saat `npm run mock` masih berjalan):
+
+```bash
+npm test
+```
+
+`test/smoke-test.js` memanggil tiga operasi inti (login, identitas
+akun, cek peran) dan memeriksa status serta bentuk responsnya. Sudah
+dijalankan dan lolos sebelum dikumpulkan — lihat `smoke-test-evidence.txt`
+pada submisi.
+
+Untuk mengembalikan lingkungan: hentikan proses `npm run mock`
+(Ctrl+C) — mock server tidak menyimpan state apa pun di luar prosesnya
+sendiri, jadi tidak ada langkah "reset data" terpisah.
+
+## CI
+
+`.github/workflows/check.yml` menjalankan urutan yang sama secara
+otomatis pada setiap push/PR: pasang dependensi → validasi
+`openapi.yaml` → jalankan mock server → jalankan `npm test`. Hasil
+lulus/gagal terlihat di tab Actions repositori.
+
+## Status
+
+Versi mock (Prism), belum ada backend asli. Langkah berikutnya sesuai
+rencana di `openapi/README.md`: implementasi endpoint nyata dimulai
+dari `POST /auth/login` (lihat Tugas Pertemuan 3 — OpenAPI, bagian
+"Tugas sprint berikutnya").
