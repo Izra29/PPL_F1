@@ -102,3 +102,19 @@ Versi mock (Prism), belum ada backend asli. Langkah berikutnya sesuai
 rencana di `openapi/README.md`: implementasi endpoint nyata dimulai
 dari `POST /auth/login` (lihat Tugas Pertemuan 3 — OpenAPI, bagian
 "Tugas sprint berikutnya").
+
+## Demo server lokal (pertemuan 5)
+
+Selain mock kontrak (`npm run mock`, berbasis Prism — statis, tidak menyimpan perubahan),
+tersedia juga server demo nyata yang benar-benar menyimpan data di memori selama proses
+berjalan, dipakai untuk membuktikan siklus buat → lihat → ubah → lihat ulang:
+
+```
+node demo/local-server.js
+```
+
+Berjalan di `http://127.0.0.1:4100`. Data direset ke `seed/seed-akun.json` setiap kali
+proses dimulai ulang. Lihat `bukti-pertemuan5.txt` untuk contoh request/response nyata.
+
+Catatan: password pada server demo ini dicek polos (bukan hash) khusus untuk kebutuhan
+demo lokal — bukan representasi keamanan produksi.
