@@ -118,3 +118,16 @@ proses dimulai ulang. Lihat `bukti-pertemuan5.txt` untuk contoh request/response
 
 Catatan: password pada server demo ini dicek polos (bukan hash) khusus untuk kebutuhan
 demo lokal — bukan representasi keamanan produksi.
+
+## Update (2026-10-24): token sekarang JWT asli
+
+Versi demo/local-server.js sebelumnya mengembalikan token PALSU (bukan JWT
+asli bertanda tangan) -- ini yang bikin error saat kelompok lain mencoba
+verifikasi token. Sudah diperbaiki: accessToken sekarang JWT asli (HS256,
+ditandatangani pakai JWT_SECRET dari .env), bisa diverifikasi dengan
+library jsonwebtoken standar oleh layanan konsumen mana pun, selama
+JWT_SECRET-nya sama persis.
+
+Endpoint yang butuh otorisasi (GET /identitas/akun/{akunId},
+GET /akun/{akunId}/peran) sekarang menolak (401) bila header
+Authorization: Bearer <token> tidak ada atau tokennya tidak valid/kedaluwarsa.
