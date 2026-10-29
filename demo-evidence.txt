@@ -1,3 +1,9 @@
+Catatan: ini mock Prism (statis, dari openapi.yaml), bukan server demo nyata.
+Prism tidak mengevaluasi kredensial sungguhan -- kasus GAGAL diminta lewat header
+'Prefer: code=<status>' supaya Prism memilih contoh respons gagal yang sudah ditulis
+di openapi.yaml. Lihat bukti-pertemuan5.txt untuk bukti dari server demo nyata
+(demo/local-server.js) yang benar-benar mengevaluasi kredensial dan menyimpan data.
+
 === KASUS BERHASIL 1: Login dengan kredensial benar ===
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
@@ -5,12 +11,12 @@ Access-Control-Allow-Headers: *
 Access-Control-Allow-Credentials: true
 Access-Control-Expose-Headers: *
 Content-type: application/json
-Content-Length: 196
-Date: Mon, 19 Oct 2026 06:15:30 GMT
+Content-Length: 201
+Date: Thu, 29 Oct 2026 03:51:14 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"accessToken":"eyJhbGciOiJIUzI1NiJ9.contoh-token-fiktif","tokenType":"Bearer","expiresIn":3600,"akun":{"akunId":"01929b4a-71f0-7c10-9a3d-5e2b8f1c4d60","nama":"Yuril Salsabila","kodePeran":"COO"}}
+{"accessToken":"eyJhbGciOiJIUzI1NiJ9.contoh-token-fiktif","tokenType":"Bearer","expiresIn":3600,"account":{"accountId":"01929b4a-71f0-7c10-9a3d-5e2b8f1c4d60","name":"Yuril Salsabila","roleCode":"COO"}}
 
 === KASUS BERHASIL 2: GET identitas akun pakai token hasil login ===
 HTTP/1.1 200 OK
@@ -19,14 +25,14 @@ Access-Control-Allow-Headers: *
 Access-Control-Allow-Credentials: true
 Access-Control-Expose-Headers: *
 Content-type: application/json
-Content-Length: 191
-Date: Mon, 19 Oct 2026 06:15:30 GMT
+Content-Length: 195
+Date: Thu, 29 Oct 2026 03:51:14 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
-{"akunId":"01929b4a-83a1-7d55-8b12-9f7c2e4a6b10","employeeId":"01929b4a-5f10-7a22-9d44-3c8f1b2e7a90","nama":"Dwi Saputra","kodePeran":"KARYAWAN","jabatan":"Staf Operasional","status":"aktif"}
+{"accountId":"01929b4a-83a1-7d55-8b12-9f7c2e4a6b10","employeeId":"01929b4a-5f10-7a22-9d44-3c8f1b2e7a90","name":"Dwi Saputra","roleCode":"EMPLOYEE","position":"Staf Operasional","status":"active"}
 
-=== KASUS GAGAL 1: Login dengan password salah ===
+=== KASUS GAGAL 1: Login dengan password salah (Prefer: code=401) ===
 HTTP/1.1 401 Unauthorized
 Access-Control-Allow-Origin: *
 Access-Control-Allow-Headers: *
@@ -34,7 +40,7 @@ Access-Control-Allow-Credentials: true
 Access-Control-Expose-Headers: *
 Content-type: application/json
 Content-Length: 97
-Date: Mon, 19 Oct 2026 06:15:30 GMT
+Date: Thu, 29 Oct 2026 03:51:14 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 
@@ -49,7 +55,7 @@ Access-Control-Expose-Headers: *
 sl-violations: [{"location":["request"],"severity":"Error","code":401,"message":"Invalid security scheme used"}]
 Content-type: application/json
 Content-Length: 89
-Date: Mon, 19 Oct 2026 06:15:30 GMT
+Date: Thu, 29 Oct 2026 03:51:14 GMT
 Connection: keep-alive
 Keep-Alive: timeout=5
 

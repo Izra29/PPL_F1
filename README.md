@@ -20,7 +20,7 @@ f1-identitas-service/
 │   ├── README.md                # Rincian kontrak API
 │   └── examples/                # Contoh respons sukses/gagal
 ├── seed/
-│   └── seed-akun.json           # Data fiktif: 8 peran + 5 akun contoh (status beragam)
+│   └── seed-accounts.json       # Data fiktif: 8 peran + 5 akun contoh (status beragam)
 ├── test/
 │   └── smoke-test.js            # Uji dasar terhadap mock server yang berjalan
 └── package.json
@@ -46,10 +46,10 @@ secara lokal; ganti `JWT_SECRET` bila nanti dipakai pada backend asli.
 npm install
 ```
 
-Data fiktif ada langsung di `seed/seed-akun.json` (tidak perlu perintah
+Data fiktif ada langsung di `seed/seed-accounts.json` (tidak perlu perintah
 migrasi/seed terpisah untuk versi mock ini, karena belum ada database).
 Berkas ini berisi 8 peran dan 5 akun contoh dengan status beragam
-(aktif, terkunci, nonaktif) agar reviewer bisa menguji skenario gagal
+(active, locked, inactive) agar reviewer bisa menguji skenario gagal
 tanpa perlu membuat data sendiri.
 
 ## 4. Menjalankan aplikasi (mock server)
@@ -66,9 +66,9 @@ lain:
 ```bash
 curl -X POST http://127.0.0.1:4010/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"emailAtauUsername":"yuril.salsabila@anaheimnimbus.co.id","password":"Rahasia#2026"}'
+  -d '{"emailOrUsername":"yuril.salsabila@anaheimnimbus.co.id","password":"Rahasia#2026"}'
 
-curl http://127.0.0.1:4010/identitas/akun/01929b4a-83a1-7d55-8b12-9f7c2e4a6b10 \
+curl http://127.0.0.1:4010/identity/accounts/01929b4a-83a1-7d55-8b12-9f7c2e4a6b10 \
   -H "Authorization: Bearer token-fiktif"
 ```
 
@@ -113,7 +113,7 @@ berjalan, dipakai untuk membuktikan siklus buat → lihat → ubah → lihat ula
 node demo/local-server.js
 ```
 
-Berjalan di `http://127.0.0.1:4100`. Data direset ke `seed/seed-akun.json` setiap kali
+Berjalan di `http://127.0.0.1:4100`. Data direset ke `seed/seed-accounts.json` setiap kali
 proses dimulai ulang. Lihat `bukti-pertemuan5.txt` untuk contoh request/response nyata.
 
 Catatan: password pada server demo ini dicek polos (bukan hash) khusus untuk kebutuhan
@@ -128,6 +128,8 @@ ditandatangani pakai JWT_SECRET dari .env), bisa diverifikasi dengan
 library jsonwebtoken standar oleh layanan konsumen mana pun, selama
 JWT_SECRET-nya sama persis.
 
-Endpoint yang butuh otorisasi (GET /identitas/akun/{akunId},
-GET /akun/{akunId}/peran) sekarang menolak (401) bila header
+Endpoint yang butuh otorisasi (GET /identity/accounts/{accountId},
+GET /accounts/{accountId}/role) sekarang menolak (401) bila header
 Authorization: Bearer <token> tidak ada atau tokennya tidak valid/kedaluwarsa.
+
+> > > > > > > > > Temporary merge branch 2

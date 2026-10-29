@@ -1,99 +1,101 @@
 === B-00a. Login valid (dwi.saputra) ===
 {
-  "accessToken": "demo.eyJha3VuSWQiOiIwMTkyOWI0YS04M2ExLTdkNTUtOGIxMi05ZjdjMmU0YTZiMTAiLCJrb2RlUGVyYW4iOiJLQVJZQVdBTiJ9.signature",
-  "akunId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
-  "kodePeran": "KARYAWAN"
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS04M2ExLTdkNTUtOGIxMi05ZjdjMmU0YTZiMTAiLCJyb2xlQ29kZSI6IkVNUExPWUVFIiwiaWF0IjoxNzkzMjQ1OTY4LCJleHAiOjE3OTMyNDk1Njh9.EKBNipB3qIs52o-F_Xk6B0UZ2ncBEYYcNXUipgNpY6s",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "roleCode": "EMPLOYEE"
 }
 HTTP 200
 
 === B-00b. Login DITOLAK (password salah) ===
 {
-  "kode": "KREDENSIAL_SALAH",
-  "pesan": "Email/username atau password salah."
+  "code": "INVALID_CREDENTIALS",
+  "message": "Email/username atau password salah."
 }
 HTTP 401
 
 === B-00c. Login DITOLAK (akun terkunci: amaliyah) ===
 {
-  "kode": "AKUN_TERKUNCI",
-  "pesan": "Akun terkunci, coba lagi nanti."
+  "code": "ACCOUNT_LOCKED",
+  "message": "Akun terkunci, coba lagi nanti."
 }
 HTTP 403
 
-=== B-01. BUAT — POST /akun ===
+=== B-01. BUAT -- POST /accounts ===
 {
-  "akunId": "01a15c43-67f0-77f9-8c67-eeec80a4249c",
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
   "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
   "username": "budi.santoso",
   "email": "budi.santoso@anaheimnimbus.co.id",
-  "nama": "Budi Santoso",
-  "kodePeran": "KARYAWAN",
-  "status": "aktif",
-  "dibuatPada": "2026-10-21T02:21:23.824Z"
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "status": "active",
+  "createdAt": "2026-10-29T03:52:48.587Z"
 }
 HTTP 201
-AKUN_ID_BARU=01a15c43-67f0-77f9-8c67-eeec80a4249c
+NEW_ACCOUNT_ID=01a185c9-f8cb-792b-b180-c0beb3c2bfaa
 
-=== B-02. LIHAT — GET /identitas/akun/{akunId} ===
+=== B-02. LIHAT -- GET /identity/accounts/{accountId} ===
 {
-  "akunId": "01a15c43-67f0-77f9-8c67-eeec80a4249c",
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
   "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
-  "nama": "Budi Santoso",
-  "kodePeran": "KARYAWAN",
-  "jabatan": null,
-  "status": "aktif"
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "position": null,
+  "status": "active"
 }
 HTTP 200
 
-=== B-03. UBAH — PUT /akun/{akunId} (status -> nonaktif) ===
+=== B-03. UBAH -- PUT /accounts/{accountId} (status -> inactive) ===
 {
-  "akunId": "01a15c43-67f0-77f9-8c67-eeec80a4249c",
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
   "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
   "username": "budi.santoso",
   "email": "budi.santoso@anaheimnimbus.co.id",
-  "nama": "Budi Santoso",
-  "kodePeran": "KARYAWAN",
-  "status": "nonaktif",
-  "dibuatPada": "2026-10-21T02:21:23.824Z"
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "status": "inactive",
+  "createdAt": "2026-10-29T03:52:48.587Z"
 }
 HTTP 200
 
-=== B-04. LIHAT ULANG — GET /identitas/akun/{akunId} (buktikan status berubah) ===
+=== B-04. LIHAT ULANG -- GET /identity/accounts/{accountId} (buktikan status berubah) ===
 {
-  "akunId": "01a15c43-67f0-77f9-8c67-eeec80a4249c",
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
   "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
-  "nama": "Budi Santoso",
-  "kodePeran": "KARYAWAN",
-  "jabatan": null,
-  "status": "nonaktif"
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "position": null,
+  "status": "inactive"
 }
 HTTP 200
 
-=== B-05. Validasi DITERIMA — buat akun dengan field lengkap ===
-(lihat B-01 di atas — diterima, HTTP 201)
+=== B-05. Validasi DITERIMA -- buat akun dengan field lengkap ===
+(lihat B-01 di atas -- diterima, HTTP 201)
 
-=== B-06. Validasi DITOLAK — buat akun tanpa employeeId (field wajib kosong) ===
+=== B-06. Validasi DITOLAK -- buat akun tanpa employeeId (field wajib kosong) ===
 {
-  "kode": "FIELD_WAJIB_KOSONG",
-  "pesan": "employeeId dan kodePeran wajib diisi."
+  "code": "REQUIRED_FIELD_MISSING",
+  "message": "employeeId dan roleCode wajib diisi."
 }
 HTTP 400
 
 === Kondisi data lama tetap utuh setelah penolakan B-06 (GET akun lama dwi.saputra) ===
 {
-  "akunId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
   "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a92",
-  "nama": "Dwi Saputra",
-  "kodePeran": "KARYAWAN",
-  "jabatan": "Staf Operasional",
-  "status": "aktif"
+  "name": "Dwi Saputra",
+  "roleCode": "EMPLOYEE",
+  "position": "Staf Operasional",
+  "status": "active"
 }
 HTTP 200
 
-=== B-07. GET /akun/{akunId}/peran (dwi.saputra) ===
+=== B-07. GET /accounts/{accountId}/role (dwi.saputra) ===
 {
-  "akunId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
-  "kodePeran": "KARYAWAN",
-  "status": "aktif"
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "roleCode": "EMPLOYEE",
+  "status": "active"
 }
 HTTP 200

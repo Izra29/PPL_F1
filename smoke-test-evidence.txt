@@ -2,8 +2,8 @@ Menguji mock server di http://127.0.0.1:4010 ...
 
 OK   - POST /auth/login mengembalikan status 2xx
 OK   - POST /auth/login mengembalikan accessToken
-OK   - GET /identitas/akun/{akunId} mengembalikan status 2xx
-OK   - GET /identitas/akun/{akunId} mengembalikan akunId yang diminta
-OK   - GET /akun/{akunId}/peran mengembalikan status 2xx
+OK   - GET /identity/accounts/{accountId} mengembalikan status 2xx
+OK   - GET /identity/accounts/{accountId} mengembalikan accountId yang diminta
+OK   - GET /accounts/{accountId}/role mengembalikan status 2xx
 
 Semua pengujian dasar lolos.
