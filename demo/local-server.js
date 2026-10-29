@@ -12,42 +12,46 @@
 //    bukan bcrypt. Implementasi asli nanti wajib pakai hash asli.
 //  - Data hilang saat proses dimatikan (in-memory, bukan database).
 //
+// Update v0.4.0 (2026-10-28): seluruh field dan path diseragamkan ke
+// Bahasa Inggris (accountId, roleCode, status: active/inactive/locked,
+// dst.) sesuai aturan dosen dan mengikuti openapi.yaml v0.4.0.
+//
 // Jalankan: node demo/local-server.js
 // Server berjalan di http://127.0.0.1:4100
 
-const http = require("http");
-const crypto = require("crypto");
-const fs = require("fs");
-const path = require("path");
-const jwt = require("jsonwebtoken");
+const http = require('http');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const jwt = require('jsonwebtoken');
 
 // Harus SAMA PERSIS dengan JWT_SECRET di .env setiap layanan konsumen (F-2, F-6, dst),
 // supaya mereka bisa verifikasi token ini secara lokal tanpa memanggil balik ke F-1.
-const JWT_SECRET = process.env.JWT_SECRET || "ganti-dengan-rahasia-acak-minimal-32-karakter";
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "3600";
+const JWT_SECRET = process.env.JWT_SECRET || 'ganti-dengan-rahasia-acak-minimal-32-karakter';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '3600';
 
-const seed = JSON.parse(fs.readFileSync(path.join(__dirname, "../seed/seed-akun.json"), "utf8"));
+const seed = JSON.parse(fs.readFileSync(path.join(__dirname, '../seed/seed-accounts.json'), 'utf8'));
 
 // Nama tampilan untuk demo (seed asli tidak menyimpan field nama/jabatan secara lengkap untuk semua akun)
-const NAMA_DEMO = {
-  "super.admin": "Super Admin",
-  "yuril.salsabila": "Yuril Salsabila",
-  "dwi.saputra": "Dwi Saputra",
-  amaliyah: "Amaliyah",
-  "icha.aprilia": "Icha Aprilia",
+const DEMO_NAMES = {
+  'super.admin': 'Super Admin',
+  'yuril.salsabila': 'Yuril Salsabila',
+  'dwi.saputra': 'Dwi Saputra',
+  'amaliyah': 'Amaliyah',
+  'icha.aprilia': 'Icha Aprilia',
 };
 
 // Password polos KHUSUS demo lokal ini (lihat catatan di atas) — bukan representasi keamanan asli.
 const DEMO_PASSWORDS = {
-  "dwi.saputra": "Password123!",
-  "yuril.salsabila": "Password123!",
-  "super.admin": "Password123!",
-  amaliyah: "Password123!",
-  "icha.aprilia": "Password123!",
+  'dwi.saputra': 'Password123!',
+  'yuril.salsabila': 'Password123!',
+  'super.admin': 'Password123!',
+  'amaliyah': 'Password123!',
+  'icha.aprilia': 'Password123!',
 };
 
 // Penyimpanan di memori — hidup selama proses ini jalan
-const akunStore = seed.akun.map((a) => ({ ...a, nama: NAMA_DEMO[a.username] || a.username }));
+const accountStore = seed.accounts.map(a => ({ ...a, name: DEMO_NAMES[a.username] || a.username }));
 
 function uuidv7() {
   const now = BigInt(Date.now());
@@ -57,133 +61,133 @@ function uuidv7() {
   rand.copy(bytes, 6);
   bytes[6] = 0x70 | (bytes[6] & 0x0f); // versi 7
   bytes[8] = 0x80 | (bytes[8] & 0x3f); // varian
-  const hex = bytes.toString("hex");
+  const hex = bytes.toString('hex');
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 function sendJson(res, status, body) {
   const data = JSON.stringify(body, null, 2);
-  res.writeHead(status, { "Content-Type": "application/json" });
+  res.writeHead(status, { 'Content-Type': 'application/json' });
   res.end(data);
 }
 
-function verifikasiToken(req) {
-  const header = req.headers["authorization"] || "";
-  const [skema, token] = header.split(" ");
-  if (skema !== "Bearer" || !token) return { ok: false, alasan: "Token tidak ada." };
+function verifyToken(req) {
+  const header = req.headers['authorization'] || '';
+  const [scheme, token] = header.split(' ');
+  if (scheme !== 'Bearer' || !token) return { ok: false, reason: 'Token tidak ada.' };
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     return { ok: true, payload };
   } catch (e) {
-    return { ok: false, alasan: `Token tidak valid: ${e.message}` };
+    return { ok: false, reason: `Token tidak valid: ${e.message}` };
   }
 }
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
-    let raw = "";
-    req.on("data", (c) => (raw += c));
-    req.on("end", () => {
+    let raw = '';
+    req.on('data', c => (raw += c));
+    req.on('end', () => {
       if (!raw) return resolve({});
-      try {
-        resolve(JSON.parse(raw));
-      } catch (e) {
-        reject(e);
-      }
+      try { resolve(JSON.parse(raw)); } catch (e) { reject(e); }
     });
   });
 }
 
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, "http://localhost");
-  const segments = url.pathname.split("/").filter(Boolean);
+  const url = new URL(req.url, 'http://localhost');
+  const segments = url.pathname.split('/').filter(Boolean);
 
   try {
     // POST /auth/login
-    if (req.method === "POST" && url.pathname === "/auth/login") {
+    if (req.method === 'POST' && url.pathname === '/auth/login') {
       const body = await readBody(req);
-      const akun = akunStore.find((a) => a.username === body.emailAtauUsername || a.email === body.emailAtauUsername);
-      if (!akun || DEMO_PASSWORDS[akun.username] !== body.password) {
-        return sendJson(res, 401, { kode: "KREDENSIAL_SALAH", pesan: "Email/username atau password salah." });
+      const account = accountStore.find(a => a.username === body.emailOrUsername || a.email === body.emailOrUsername);
+      if (!account || DEMO_PASSWORDS[account.username] !== body.password) {
+        return sendJson(res, 401, { code: 'INVALID_CREDENTIALS', message: 'Email/username atau password salah.' });
       }
-      if (akun.status === "terkunci") {
-        return sendJson(res, 403, { kode: "AKUN_TERKUNCI", pesan: "Akun terkunci, coba lagi nanti." });
+      if (account.status === 'locked') {
+        return sendJson(res, 403, { code: 'ACCOUNT_LOCKED', message: 'Akun terkunci, coba lagi nanti.' });
       }
-      if (akun.status === "nonaktif") {
-        return sendJson(res, 403, { kode: "AKUN_NONAKTIF", pesan: "Akun nonaktif, hubungi admin." });
+      if (account.status === 'inactive') {
+        return sendJson(res, 403, { code: 'ACCOUNT_INACTIVE', message: 'Akun nonaktif, hubungi admin.' });
       }
-      const accessToken = jwt.sign({ akunId: akun.akunId, kodePeran: akun.kodePeran }, JWT_SECRET, { algorithm: "HS256", expiresIn: Number(JWT_EXPIRES_IN) });
+      const accessToken = jwt.sign(
+        { accountId: account.accountId, roleCode: account.roleCode },
+        JWT_SECRET,
+        { algorithm: 'HS256', expiresIn: Number(JWT_EXPIRES_IN) }
+      );
       return sendJson(res, 200, {
         accessToken,
-        tokenType: "Bearer",
+        tokenType: 'Bearer',
         expiresIn: Number(JWT_EXPIRES_IN),
-        akunId: akun.akunId,
-        kodePeran: akun.kodePeran,
+        accountId: account.accountId,
+        roleCode: account.roleCode,
       });
     }
 
-    // POST /akun  (Buat)
-    if (req.method === "POST" && url.pathname === "/akun") {
+    // POST /accounts  (Buat)
+    if (req.method === 'POST' && url.pathname === '/accounts') {
       const body = await readBody(req);
-      if (!body.employeeId || !body.kodePeran) {
-        return sendJson(res, 400, { kode: "FIELD_WAJIB_KOSONG", pesan: "employeeId dan kodePeran wajib diisi." });
+      if (!body.employeeId || !body.roleCode) {
+        return sendJson(res, 400, { code: 'REQUIRED_FIELD_MISSING', message: 'employeeId dan roleCode wajib diisi.' });
       }
-      const username = body.username || `pegawai.${akunStore.length + 1}`;
-      if (akunStore.some((a) => a.username === username)) {
-        return sendJson(res, 409, { kode: "USERNAME_TERPAKAI", pesan: "Username atau email sudah terdaftar." });
+      const username = body.username || `pegawai.${accountStore.length + 1}`;
+      if (accountStore.some(a => a.username === username)) {
+        return sendJson(res, 409, { code: 'USERNAME_TAKEN', message: 'Username atau email sudah terdaftar.' });
       }
-      const baru = {
-        akunId: uuidv7(),
+      const created = {
+        accountId: uuidv7(),
         employeeId: body.employeeId,
         username,
         email: `${username}@anaheimnimbus.co.id`,
-        nama: body.nama || "Pegawai Baru (Demo)",
-        kodePeran: body.kodePeran,
-        status: "aktif",
-        dibuatPada: new Date().toISOString(),
+        name: body.name || 'Pegawai Baru (Demo)',
+        roleCode: body.roleCode,
+        status: 'active',
+        createdAt: new Date().toISOString(),
       };
-      akunStore.push(baru);
-      return sendJson(res, 201, baru);
+      accountStore.push(created);
+      return sendJson(res, 201, created);
     }
 
-    // GET /identitas/akun/{akunId}  (Lihat) — perlu token valid (bearerAuth)
-    if (req.method === "GET" && segments[0] === "identitas" && segments[1] === "akun" && segments[2]) {
-      const cek = verifikasiToken(req);
-      if (!cek.ok) return sendJson(res, 401, { kode: "TOKEN_TIDAK_VALID", pesan: cek.alasan });
-      const akun = akunStore.find((a) => a.akunId === segments[2]);
-      if (!akun) return sendJson(res, 404, { kode: "AKUN_TIDAK_DITEMUKAN", pesan: "akunId tidak ditemukan." });
+    // GET /identity/accounts/{accountId}  (Lihat) — perlu token valid (bearerAuth)
+    if (req.method === 'GET' && segments[0] === 'identity' && segments[1] === 'accounts' && segments[2]) {
+      const check = verifyToken(req);
+      if (!check.ok) return sendJson(res, 401, { code: 'INVALID_TOKEN', message: check.reason });
+      const account = accountStore.find(a => a.accountId === segments[2]);
+      if (!account) return sendJson(res, 404, { code: 'ACCOUNT_NOT_FOUND', message: 'accountId tidak ditemukan.' });
       return sendJson(res, 200, {
-        akunId: akun.akunId,
-        employeeId: akun.employeeId,
-        nama: akun.nama,
-        kodePeran: akun.kodePeran,
-        jabatan: akun.jabatan || null,
-        status: akun.status,
+        accountId: account.accountId,
+        employeeId: account.employeeId,
+        name: account.name,
+        roleCode: account.roleCode,
+        position: account.position || null,
+        status: account.status,
       });
     }
 
-    // PUT /akun/{akunId}  (Ubah)
-    if (req.method === "PUT" && segments[0] === "akun" && segments[1] && !segments[2]) {
-      const akun = akunStore.find((a) => a.akunId === segments[1]);
-      if (!akun) return sendJson(res, 404, { kode: "AKUN_TIDAK_DITEMUKAN", pesan: "akunId tidak ditemukan." });
+    // PUT /accounts/{accountId}  (Ubah)
+    if (req.method === 'PUT' && segments[0] === 'accounts' && segments[1] && !segments[2]) {
+      const account = accountStore.find(a => a.accountId === segments[1]);
+      if (!account) return sendJson(res, 404, { code: 'ACCOUNT_NOT_FOUND', message: 'accountId tidak ditemukan.' });
       const body = await readBody(req);
-      if (body.status) akun.status = body.status;
-      if (body.kodePeran) akun.kodePeran = body.kodePeran;
-      return sendJson(res, 200, akun);
+      if (body.status) account.status = body.status;
+      if (body.roleCode) account.roleCode = body.roleCode;
+      return sendJson(res, 200, account);
     }
 
-    // GET /akun/{akunId}/peran — perlu token valid (bearerAuth)
-    if (req.method === "GET" && segments[0] === "akun" && segments[1] && segments[2] === "peran") {
-      const cek = verifikasiToken(req);
-      if (!cek.ok) return sendJson(res, 401, { kode: "TOKEN_TIDAK_VALID", pesan: cek.alasan });
-      const akun = akunStore.find((a) => a.akunId === segments[1]);
-      if (!akun) return sendJson(res, 404, { kode: "AKUN_TIDAK_DITEMUKAN", pesan: "akunId tidak ditemukan." });
-      return sendJson(res, 200, { akunId: akun.akunId, kodePeran: akun.kodePeran, status: akun.status });
+    // GET /accounts/{accountId}/role — perlu token valid (bearerAuth)
+    if (req.method === 'GET' && segments[0] === 'accounts' && segments[1] && segments[2] === 'role') {
+      const check = verifyToken(req);
+      if (!check.ok) return sendJson(res, 401, { code: 'INVALID_TOKEN', message: check.reason });
+      const account = accountStore.find(a => a.accountId === segments[1]);
+      if (!account) return sendJson(res, 404, { code: 'ACCOUNT_NOT_FOUND', message: 'accountId tidak ditemukan.' });
+      return sendJson(res, 200, { accountId: account.accountId, roleCode: account.roleCode, status: account.status });
     }
 
-    return sendJson(res, 404, { kode: "RUTE_TIDAK_DIKENAL", pesan: "Path tidak dikenal pada demo server ini." });
+    return sendJson(res, 404, { code: 'UNKNOWN_ROUTE', message: 'Path tidak dikenal pada demo server ini.' });
   } catch (e) {
-    return sendJson(res, 400, { kode: "BODY_TIDAK_VALID", pesan: "Body request bukan JSON yang valid." });
+    return sendJson(res, 400, { code: 'INVALID_BODY', message: 'Body request bukan JSON yang valid.' });
   }
 });
 

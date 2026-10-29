@@ -41,7 +41,7 @@ function request(method, path, body, { auth = false } = {}) {
   });
 }
 
-const AKUN_ID_CONTOH = '01929b4a-83a1-7d55-8b12-9f7c2e4a6b10';
+const SAMPLE_ACCOUNT_ID = '01929b4a-83a1-7d55-8b12-9f7c2e4a6b10';
 
 let failed = 0;
 
@@ -58,7 +58,7 @@ async function main() {
   console.log(`Menguji mock server di ${BASE} ...\n`);
 
   const login = await request('POST', '/auth/login', {
-    emailAtauUsername: 'yuril.salsabila@anaheimnimbus.co.id',
+    emailOrUsername: 'yuril.salsabila@anaheimnimbus.co.id',
     password: 'Rahasia#2026',
   });
   check('POST /auth/login mengembalikan status 2xx', login.status >= 200 && login.status < 300);
@@ -67,18 +67,18 @@ async function main() {
     login.body && typeof login.body.accessToken === 'string'
   );
 
-  const identitas = await request('GET', `/identitas/akun/${AKUN_ID_CONTOH}`, null, { auth: true });
+  const identity = await request('GET', `/identity/accounts/${SAMPLE_ACCOUNT_ID}`, null, { auth: true });
   check(
-    'GET /identitas/akun/{akunId} mengembalikan status 2xx',
-    identitas.status >= 200 && identitas.status < 300
+    'GET /identity/accounts/{accountId} mengembalikan status 2xx',
+    identity.status >= 200 && identity.status < 300
   );
   check(
-    'GET /identitas/akun/{akunId} mengembalikan akunId yang diminta',
-    identitas.body && typeof identitas.body.akunId === 'string'
+    'GET /identity/accounts/{accountId} mengembalikan accountId yang diminta',
+    identity.body && typeof identity.body.accountId === 'string'
   );
 
-  const peran = await request('GET', `/akun/${AKUN_ID_CONTOH}/peran`, null, { auth: true });
-  check('GET /akun/{akunId}/peran mengembalikan status 2xx', peran.status >= 200 && peran.status < 300);
+  const role = await request('GET', `/accounts/${SAMPLE_ACCOUNT_ID}/role`, null, { auth: true });
+  check('GET /accounts/{accountId}/role mengembalikan status 2xx', role.status >= 200 && role.status < 300);
 
   console.log('');
   if (failed > 0) {

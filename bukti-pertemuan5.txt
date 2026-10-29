@@ -1,0 +1,101 @@
+=== B-00a. Login valid (dwi.saputra) ===
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS04M2ExLTdkNTUtOGIxMi05ZjdjMmU0YTZiMTAiLCJyb2xlQ29kZSI6IkVNUExPWUVFIiwiaWF0IjoxNzkzMjQ1OTY4LCJleHAiOjE3OTMyNDk1Njh9.EKBNipB3qIs52o-F_Xk6B0UZ2ncBEYYcNXUipgNpY6s",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "roleCode": "EMPLOYEE"
+}
+HTTP 200
+
+=== B-00b. Login DITOLAK (password salah) ===
+{
+  "code": "INVALID_CREDENTIALS",
+  "message": "Email/username atau password salah."
+}
+HTTP 401
+
+=== B-00c. Login DITOLAK (akun terkunci: amaliyah) ===
+{
+  "code": "ACCOUNT_LOCKED",
+  "message": "Akun terkunci, coba lagi nanti."
+}
+HTTP 403
+
+=== B-01. BUAT -- POST /accounts ===
+{
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
+  "username": "budi.santoso",
+  "email": "budi.santoso@anaheimnimbus.co.id",
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "status": "active",
+  "createdAt": "2026-10-29T03:52:48.587Z"
+}
+HTTP 201
+NEW_ACCOUNT_ID=01a185c9-f8cb-792b-b180-c0beb3c2bfaa
+
+=== B-02. LIHAT -- GET /identity/accounts/{accountId} ===
+{
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "position": null,
+  "status": "active"
+}
+HTTP 200
+
+=== B-03. UBAH -- PUT /accounts/{accountId} (status -> inactive) ===
+{
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
+  "username": "budi.santoso",
+  "email": "budi.santoso@anaheimnimbus.co.id",
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "status": "inactive",
+  "createdAt": "2026-10-29T03:52:48.587Z"
+}
+HTTP 200
+
+=== B-04. LIHAT ULANG -- GET /identity/accounts/{accountId} (buktikan status berubah) ===
+{
+  "accountId": "01a185c9-f8cb-792b-b180-c0beb3c2bfaa",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a99",
+  "name": "Budi Santoso",
+  "roleCode": "EMPLOYEE",
+  "position": null,
+  "status": "inactive"
+}
+HTTP 200
+
+=== B-05. Validasi DITERIMA -- buat akun dengan field lengkap ===
+(lihat B-01 di atas -- diterima, HTTP 201)
+
+=== B-06. Validasi DITOLAK -- buat akun tanpa employeeId (field wajib kosong) ===
+{
+  "code": "REQUIRED_FIELD_MISSING",
+  "message": "employeeId dan roleCode wajib diisi."
+}
+HTTP 400
+
+=== Kondisi data lama tetap utuh setelah penolakan B-06 (GET akun lama dwi.saputra) ===
+{
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a92",
+  "name": "Dwi Saputra",
+  "roleCode": "EMPLOYEE",
+  "position": "Staf Operasional",
+  "status": "active"
+}
+HTTP 200
+
+=== B-07. GET /accounts/{accountId}/role (dwi.saputra) ===
+{
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "roleCode": "EMPLOYEE",
+  "status": "active"
+}
+HTTP 200

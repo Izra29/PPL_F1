@@ -1,0 +1,64 @@
+{
+  "_note": "Data fiktif untuk lingkungan uji F-1 (identitas, akun, dan hak akses). ID memakai format UUID v7 sesuai kesepakatan kelas pertemuan 2. Jangan dipakai sebagai data produksi.",
+  "roles": [
+    { "roleCode": "CEO", "name": "Chief Executive Officer" },
+    { "roleCode": "COO", "name": "Chief Operating Officer" },
+    { "roleCode": "CTO", "name": "Chief Technology Officer" },
+    { "roleCode": "ADMIN", "name": "Admin" },
+    { "roleCode": "AM", "name": "Account Manager" },
+    { "roleCode": "PM", "name": "Project Manager" },
+    { "roleCode": "EMPLOYEE", "name": "Karyawan" },
+    { "roleCode": "SPECIALIST", "name": "Tenaga Ahli" }
+  ],
+  "accounts": [
+    {
+      "accountId": "01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a9f",
+      "username": "super.admin",
+      "email": "super.admin@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashSuperAdminXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "ADMIN",
+      "status": "active",
+      "note": "Akun seed awal (Q-13) — super admin sebelum deployment pertama."
+    },
+    {
+      "accountId": "01929b4a-71f0-7c10-9a3d-5e2b8f1c4d60",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a90",
+      "username": "yuril.salsabila",
+      "email": "yuril.salsabila@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashYurilXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "COO",
+      "status": "active"
+    },
+    {
+      "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a92",
+      "username": "dwi.saputra",
+      "email": "dwi.saputra@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashDwiXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "EMPLOYEE",
+      "status": "active",
+      "position": "Staf Operasional"
+    },
+    {
+      "accountId": "01929b4a-9012-7e66-8d23-1a2b3c4d5e60",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a93",
+      "username": "amaliyah",
+      "email": "amaliyah@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashAmaliyahXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "SPECIALIST",
+      "status": "locked",
+      "note": "Skenario uji: akun terkunci setelah percobaan login gagal berulang."
+    },
+    {
+      "accountId": "01929b4a-a123-7f77-9e34-2b3c4d5e6f70",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a94",
+      "username": "icha.aprilia",
+      "email": "icha.aprilia@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashIchaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "PM",
+      "status": "inactive",
+      "note": "Skenario uji: akun nonaktif (kontrak tenaga ahli berakhir / dinonaktifkan admin)."
+    }
+  ]
+}
