@@ -132,33 +132,4 @@ Endpoint yang butuh otorisasi (GET /identity/accounts/{accountId},
 GET /accounts/{accountId}/role) sekarang menolak (401) bila header
 Authorization: Bearer <token> tidak ada atau tokennya tidak valid/kedaluwarsa.
 
-## Update (2026-10-28): penamaan diseragamkan ke Bahasa Inggris
-
-Sesuai aturan dosen: nama skema, properti/field, nilai enum, operationId, dan
-path pada kontrak dan kode (openapi.yaml, demo/local-server.js,
-seed/seed-accounts.json, test/smoke-test.js) diseragamkan ke Bahasa Inggris
-supaya konsisten dan sinkron dengan kontrak kelompok lain. Teks
-deskripsi/summary dalam dokumen tetap Bahasa Indonesia. Kontrak naik ke
-v0.4.0 (dari v0.3.0) — ini perubahan yang memecah kompatibilitas (breaking
-change) terhadap kontrak sebelumnya, karena nama field dan path berubah.
-
-Pemetaan nama lama → nama baru yang paling penting bagi kelompok konsumen (F-2 s.d. F-6):
-
-| Lama | Baru |
-| --- | --- |
-| `akunId` | `accountId` |
-| `kodePeran` | `roleCode` |
-| `nama` | `name` |
-| `jabatan` | `position` |
-| `dibuatPada` | `createdAt` |
-| `emailAtauUsername` | `emailOrUsername` |
-| `passwordBaru` | `newPassword` |
-| `ingatSaya` | `rememberMe` |
-| status `aktif` / `nonaktif` / `terkunci` | `active` / `inactive` / `locked` |
-| peran `KARYAWAN` / `TENAGA_AHLI` | `EMPLOYEE` / `SPECIALIST` |
-| skema `Akun` / `AkunBaru` / `AkunUbahan` / `AkunRingkas` | `Account` / `NewAccount` / `AccountUpdate` / `AccountSummary` |
-| skema `StatusAkun` / `KodePeran` / `IdentitasPengguna` | `AccountStatus` / `RoleCode` / `UserIdentity` |
-| path `/akun` | `/accounts` |
-| path `/akun/{akunId}` | `/accounts/{accountId}` |
-| path `/akun/{akunId}/peran` | `/accounts/{accountId}/role` |
-| path `/identitas/akun/{akunId}` | `/identity/accounts/{accountId}` |
+> > > > > > > > > Temporary merge branch 2
