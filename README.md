@@ -20,7 +20,7 @@ f1-identitas-service/
 │   ├── README.md                # Rincian kontrak API
 │   └── examples/                # Contoh respons sukses/gagal
 ├── seed/
-│   └── seed-accounts.json       # Data fiktif: 8 peran + 5 akun contoh (status beragam)
+│   └── seed-accounts.json       # Data fiktif: 11 peran + 8 akun contoh (status beragam)
 ├── test/
 │   └── smoke-test.js            # Uji dasar terhadap mock server yang berjalan
 └── package.json
@@ -48,7 +48,7 @@ npm install
 
 Data fiktif ada langsung di `seed/seed-accounts.json` (tidak perlu perintah
 migrasi/seed terpisah untuk versi mock ini, karena belum ada database).
-Berkas ini berisi 8 peran dan 5 akun contoh dengan status beragam
+Berkas ini berisi 11 peran dan 8 akun contoh dengan status beragam
 (active, locked, inactive) agar reviewer bisa menguji skenario gagal
 tanpa perlu membuat data sendiri.
 
@@ -132,4 +132,77 @@ Endpoint yang butuh otorisasi (GET /identity/accounts/{accountId},
 GET /accounts/{accountId}/role) sekarang menolak (401) bila header
 Authorization: Bearer <token> tidak ada atau tokennya tidak valid/kedaluwarsa.
 
-> > > > > > > > > Temporary merge branch 2
+## Update (2026-10-28): penamaan diseragamkan ke Bahasa Inggris
+
+Sesuai aturan dosen: nama skema, properti/field, nilai enum, operationId, dan
+path pada kontrak dan kode (openapi.yaml, demo/local-server.js,
+seed/seed-accounts.json, test/smoke-test.js) diseragamkan ke Bahasa Inggris
+supaya konsisten dan sinkron dengan kontrak kelompok lain. Teks
+deskripsi/summary dalam dokumen tetap Bahasa Indonesia. Kontrak naik ke
+v0.4.0 (dari v0.3.0) — ini perubahan yang memecah kompatibilitas (breaking
+change) terhadap kontrak sebelumnya, karena nama field dan path berubah.
+
+Pemetaan nama lama → nama baru yang paling penting bagi kelompok konsumen (F-2 s.d. F-6):
+
+| Lama | Baru |
+| --- | --- |
+| `akunId` | `accountId` |
+| `kodePeran` | `roleCode` |
+| `nama` | `name` |
+| `jabatan` | `position` |
+| `dibuatPada` | `createdAt` |
+| `emailAtauUsername` | `emailOrUsername` |
+| `passwordBaru` | `newPassword` |
+| `ingatSaya` | `rememberMe` |
+| status `aktif` / `nonaktif` / `terkunci` | `active` / `inactive` / `locked` |
+| peran `KARYAWAN` / `TENAGA_AHLI` | `EMPLOYEE` / `SPECIALIST` |
+| skema `Akun` / `AkunBaru` / `AkunUbahan` / `AkunRingkas` | `Account` / `NewAccount` / `AccountUpdate` / `AccountSummary` |
+| skema `StatusAkun` / `KodePeran` / `IdentitasPengguna` | `AccountStatus` / `RoleCode` / `UserIdentity` |
+| path `/akun` | `/accounts` |
+| path `/akun/{akunId}` | `/accounts/{accountId}` |
+| path `/akun/{akunId}/peran` | `/accounts/{accountId}/role` |
+| path `/identitas/akun/{akunId}` | `/identity/accounts/{accountId}` |
+
+## Update (2026-11-02): bug pemeriksaan izin -- v0.4.1 (pertemuan 6)
+
+Ditemukan saat menyiapkan bukti "Pemeriksaan identitas dan hak akses"
+pertemuan 6: `openapi.yaml` sudah lama mendokumentasikan bahwa
+`POST /accounts` dan `PUT /accounts/{accountId}` menolak (403) pemanggil
+yang bukan `COO`/`CTO`/`ADMIN`, tapi `demo/local-server.js` **tidak
+pernah benar-benar memeriksa itu** -- siapa pun dengan token valid apa
+pun rolenya bisa membuat/mengubah akun. Sudah diperbaiki: kedua endpoint
+itu sekarang memverifikasi token DAN menolak role selain
+`COO`/`CTO`/`ADMIN` dengan `403 INSUFFICIENT_PERMISSION`.
+
+**Dampak buat konsumen**: pemanggil `POST /accounts` dan
+`PUT /accounts/{accountId}` (termasuk trigger dari F-2 saat pegawai baru
+terdaftar) sekarang WAJIB menyertakan header
+`Authorization: Bearer <token>` dengan role `COO`/`CTO`/`ADMIN` --
+sebelumnya tidak wajib (bug). Lihat `bukti-pertemuan6.txt` untuk bukti
+nyata kasus izin sah dan izin tidak cukup.
+
+## Update (2026-11-03): penyesuaian role -- v0.5.0
+
+Atas permintaan kelompok mitra:
+
+| Permintaan | Keputusan |
+| --- | --- |
+| Direktur | Dipetakan ke `CEO` (tidak ada role baru) |
+| Komisaris | Dipetakan ke `COO` (tidak ada role baru) |
+| Kepala Finance | Role baru `CFO` |
+| Technical Writer | Role baru `TW`, **bisa login** |
+| Technical Lead | Role baru `TL`, **bisa login** |
+| AM | Sudah ada (`AM` = Account Manager); sekarang punya akun seed contoh |
+
+`RoleCode` sekarang: `CEO, COO, CTO, CFO, ADMIN, AM, PM, EMPLOYEE, SPECIALIST, TW, TL`
+(11 nilai). Penambahan bersifat aditif sehingga **tidak memecah kompatibilitas**
+terhadap konsumen v0.4.x. Hak membuat/mengubah akun tetap hanya `COO`/`CTO`/`ADMIN`;
+role baru (CFO, TW, TL) dan AM belum punya hak itu.
+
+Akun seed contoh baru (password demo `Password123!`): `maelani.tw` (TW),
+`amaliyah.tl` (TL), `account.manager` (AM).
+
+Catatan tambahan v0.5.0: respons `POST /auth/login` pada demo server sekarang juga
+memuat objek `account` (`accountId`, `name`, `roleCode`) sesuai `LoginResponse`
+di kontrak. Field datar `accountId` dan `roleCode` tetap dipertahankan supaya
+konsumen yang sudah memakainya tidak rusak.

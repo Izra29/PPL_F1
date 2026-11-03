@@ -1,0 +1,91 @@
+=== C-00. Login sebagai ADMIN (super.admin) -- buat token akses sah ===
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS02ZTJhLTdiM2YtOGM3MS0wYWI0ZTNkOWYyYTEiLCJyb2xlQ29kZSI6IkFETUlOIiwiaWF0IjoxNzkzNjI2OTA5LCJleHAiOjE3OTM2MzA1MDl9.WQSOYyRqiJ9OOc9zch4h30HqjbcXuQB3kcLhmGMMdZ0",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "accountId": "01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1",
+  "roleCode": "ADMIN"
+}
+HTTP 200
+
+=== C-01. Login sebagai EMPLOYEE (dwi.saputra) -- token non-admin, dipakai buat kasus izin tidak cukup ===
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS04M2ExLTdkNTUtOGIxMi05ZjdjMmU0YTZiMTAiLCJyb2xlQ29kZSI6IkVNUExPWUVFIiwiaWF0IjoxNzkzNjI2OTA5LCJleHAiOjE3OTM2MzA1MDl9.cFPcIWk9SKp0xwbAdNzCkQcQTmnaAw-Wbf831VUeggA",
+  "tokenType": "Bearer",
+  "expiresIn": 3600,
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "roleCode": "EMPLOYEE"
+}
+HTTP 200
+
+=== C-02. Identitas dan peran SAH -- GET /identity/accounts/{accountId} pakai token valid ===
+{
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a92",
+  "name": "Dwi Saputra",
+  "roleCode": "EMPLOYEE",
+  "position": "Staf Operasional",
+  "status": "active"
+}
+HTTP 200
+
+=== C-03. Identitas TIDAK SAH -- GET /identity/accounts/{accountId} TANPA token ===
+{
+  "code": "INVALID_TOKEN",
+  "message": "Token tidak ada."
+}
+HTTP 401
+
+=== C-04. Identitas TIDAK SAH -- GET /identity/accounts/{accountId} pakai token rusak/acak ===
+{
+  "code": "INVALID_TOKEN",
+  "message": "Token tidak valid: jwt malformed"
+}
+HTTP 401
+
+=== C-05. IZIN TIDAK CUKUP -- POST /accounts pakai token EMPLOYEE (bukan COO/CTO/Admin) ===
+{
+  "code": "INSUFFICIENT_PERMISSION",
+  "message": "Pemanggil bukan COO/CTO/Admin."
+}
+HTTP 403
+
+=== Kondisi data: akun 'percobaan.izin' TIDAK pernah tercipta setelah C-05 ditolak ===
+{
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "roleCode": "EMPLOYEE",
+  "status": "active"
+}
+HTTP 200
+(cek tidak langsung ke akun baru karena ditolak sebelum tersimpan -- tidak ada accountId yang dihasilkan sama sekali)
+
+=== C-06. IZIN CUKUP -- POST /accounts pakai token ADMIN (role diizinkan kontrak) ===
+{
+  "accountId": "01a19c7e-ab57-73c6-8f24-46edb36321e1",
+  "employeeId": "emp-izin-2",
+  "username": "budi.izin",
+  "email": "budi.izin@anaheimnimbus.co.id",
+  "name": "Pegawai Baru (Demo)",
+  "roleCode": "EMPLOYEE",
+  "status": "active",
+  "createdAt": "2026-11-02T13:41:49.527Z"
+}
+HTTP 201
+
+=== C-07. IZIN TIDAK CUKUP -- PUT /accounts/{accountId} pakai token EMPLOYEE (bukan COO/CTO/Admin) ===
+{
+  "code": "INSUFFICIENT_PERMISSION",
+  "message": "Pemanggil bukan COO/CTO/Admin."
+}
+HTTP 403
+
+=== Kondisi data lama (dwi.saputra) tetap utuh setelah C-07 ditolak ===
+{
+  "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+  "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a92",
+  "name": "Dwi Saputra",
+  "roleCode": "EMPLOYEE",
+  "position": "Staf Operasional",
+  "status": "active"
+}
+HTTP 200

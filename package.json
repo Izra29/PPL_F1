@@ -1,6 +1,6 @@
 {
   "name": "f1-identitas-service",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Kontrak API dan mock server kelompok F-1 (Identitas, akun, dan hak akses) — Proyek Perangkat Lunak ERP PT Anaheim Nimbus Universal.",
   "private": true,
   "scripts": {

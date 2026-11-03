@@ -1,14 +1,50 @@
 {
   "_note": "Data fiktif untuk lingkungan uji F-1 (identitas, akun, dan hak akses). ID memakai format UUID v7 sesuai kesepakatan kelas pertemuan 2. Jangan dipakai sebagai data produksi.",
   "roles": [
-    { "roleCode": "CEO", "name": "Chief Executive Officer" },
-    { "roleCode": "COO", "name": "Chief Operating Officer" },
-    { "roleCode": "CTO", "name": "Chief Technology Officer" },
-    { "roleCode": "ADMIN", "name": "Admin" },
-    { "roleCode": "AM", "name": "Account Manager" },
-    { "roleCode": "PM", "name": "Project Manager" },
-    { "roleCode": "EMPLOYEE", "name": "Karyawan" },
-    { "roleCode": "SPECIALIST", "name": "Tenaga Ahli" }
+    {
+      "roleCode": "CEO",
+      "name": "Chief Executive Officer"
+    },
+    {
+      "roleCode": "COO",
+      "name": "Chief Operating Officer"
+    },
+    {
+      "roleCode": "CTO",
+      "name": "Chief Technology Officer"
+    },
+    {
+      "roleCode": "CFO",
+      "name": "Chief Finance Officer (Kepala Finance)"
+    },
+    {
+      "roleCode": "ADMIN",
+      "name": "Admin"
+    },
+    {
+      "roleCode": "AM",
+      "name": "Account Manager"
+    },
+    {
+      "roleCode": "PM",
+      "name": "Project Manager"
+    },
+    {
+      "roleCode": "EMPLOYEE",
+      "name": "Karyawan"
+    },
+    {
+      "roleCode": "SPECIALIST",
+      "name": "Tenaga Ahli"
+    },
+    {
+      "roleCode": "TW",
+      "name": "Technical Writer"
+    },
+    {
+      "roleCode": "TL",
+      "name": "Technical Lead"
+    }
   ],
   "accounts": [
     {
@@ -59,6 +95,36 @@
       "roleCode": "PM",
       "status": "inactive",
       "note": "Skenario uji: akun nonaktif (kontrak tenaga ahli berakhir / dinonaktifkan admin)."
+    },
+    {
+      "accountId": "01929b4a-b234-7088-af45-3c4d5e6f7081",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a95",
+      "username": "maelani.tw",
+      "email": "maelani.tw@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashMaelaniTWXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "TW",
+      "status": "active",
+      "note": "Akun seed contoh role TW (Technical Writer) -- v0.5.0 varian A."
+    },
+    {
+      "accountId": "01929b4a-c345-7199-bf56-4d5e6f708192",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a96",
+      "username": "amaliyah.tl",
+      "email": "amaliyah.tl@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashAmaliyahTLXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "TL",
+      "status": "active",
+      "note": "Akun seed contoh role TL (Technical Lead) -- v0.5.0 varian A."
+    },
+    {
+      "accountId": "01929b4a-d456-72aa-8c67-5f6a708192a3",
+      "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a97",
+      "username": "account.manager",
+      "email": "account.manager@anaheimnimbus.co.id",
+      "passwordHash": "$2b$12$seedHashAccountManagerXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+      "roleCode": "AM",
+      "status": "active",
+      "note": "Akun seed contoh role AM (Account Manager) -- v0.5.0."
     }
   ]
 }

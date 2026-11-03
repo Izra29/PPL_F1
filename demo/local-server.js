@@ -16,6 +16,17 @@
 // Bahasa Inggris (accountId, roleCode, status: active/inactive/locked,
 // dst.) sesuai aturan dosen dan mengikuti openapi.yaml v0.4.0.
 //
+// Update v0.4.1 (2026-11-02, pertemuan 6): openapi.yaml sudah lama
+// mendokumentasikan bahwa POST /accounts dan PUT /accounts/{accountId}
+// menolak (403) pemanggil yang bukan COO/CTO/Admin -- tapi demo server
+// ini sebelumnya TIDAK memeriksa itu sama sekali (bug, ketahuan saat
+// menyiapkan bukti "Pemeriksaan identitas dan hak akses" pertemuan 6).
+// Sudah diperbaiki: kedua endpoint itu sekarang benar-benar memverifikasi
+// token dan menolak role selain COO/CTO/ADMIN dengan 403.
+//
+// Update v0.5.0 (2026-11-03): role CFO, TW, TL ditambahkan (TW/TL bisa login)
+// dan ada akun seed contoh untuk AM, TW, TL.
+//
 // Jalankan: node demo/local-server.js
 // Server berjalan di http://127.0.0.1:4100
 
@@ -39,6 +50,9 @@ const DEMO_NAMES = {
   'dwi.saputra': 'Dwi Saputra',
   'amaliyah': 'Amaliyah',
   'icha.aprilia': 'Icha Aprilia',
+  'maelani.tw': 'Maelani (TW)',
+  'amaliyah.tl': 'Amaliyah (TL)',
+  'account.manager': 'Account Manager (Demo)',
 };
 
 // Password polos KHUSUS demo lokal ini (lihat catatan di atas) — bukan representasi keamanan asli.
@@ -48,6 +62,9 @@ const DEMO_PASSWORDS = {
   'super.admin': 'Password123!',
   'amaliyah': 'Password123!',
   'icha.aprilia': 'Password123!',
+  'maelani.tw': 'Password123!',
+  'amaliyah.tl': 'Password123!',
+  'account.manager': 'Password123!',
 };
 
 // Penyimpanan di memori — hidup selama proses ini jalan
@@ -70,6 +87,9 @@ function sendJson(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
   res.end(data);
 }
+
+// Role yang boleh membuat/mengubah akun, sesuai openapi.yaml ("Pemanggil bukan COO/CTO/Admin").
+const ACCOUNT_MANAGER_ROLES = ['COO', 'CTO', 'ADMIN'];
 
 function verifyToken(req) {
   const header = req.headers['authorization'] || '';
@@ -121,13 +141,21 @@ const server = http.createServer(async (req, res) => {
         accessToken,
         tokenType: 'Bearer',
         expiresIn: Number(JWT_EXPIRES_IN),
+        // Objek `account` sesuai kontrak (LoginResponse.account).
+        account: { accountId: account.accountId, name: account.name, roleCode: account.roleCode },
+        // Field datar di bawah dipertahankan demi kompatibilitas dengan konsumen yang sudah memakainya.
         accountId: account.accountId,
         roleCode: account.roleCode,
       });
     }
 
-    // POST /accounts  (Buat)
+    // POST /accounts  (Buat) — perlu token valid DAN role COO/CTO/ADMIN
     if (req.method === 'POST' && url.pathname === '/accounts') {
+      const check = verifyToken(req);
+      if (!check.ok) return sendJson(res, 401, { code: 'INVALID_TOKEN', message: check.reason });
+      if (!ACCOUNT_MANAGER_ROLES.includes(check.payload.roleCode)) {
+        return sendJson(res, 403, { code: 'INSUFFICIENT_PERMISSION', message: 'Pemanggil bukan COO/CTO/Admin.' });
+      }
       const body = await readBody(req);
       if (!body.employeeId || !body.roleCode) {
         return sendJson(res, 400, { code: 'REQUIRED_FIELD_MISSING', message: 'employeeId dan roleCode wajib diisi.' });
@@ -166,8 +194,13 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    // PUT /accounts/{accountId}  (Ubah)
+    // PUT /accounts/{accountId}  (Ubah) — perlu token valid DAN role COO/CTO/ADMIN
     if (req.method === 'PUT' && segments[0] === 'accounts' && segments[1] && !segments[2]) {
+      const check = verifyToken(req);
+      if (!check.ok) return sendJson(res, 401, { code: 'INVALID_TOKEN', message: check.reason });
+      if (!ACCOUNT_MANAGER_ROLES.includes(check.payload.roleCode)) {
+        return sendJson(res, 403, { code: 'INSUFFICIENT_PERMISSION', message: 'Pemanggil bukan COO/CTO/Admin.' });
+      }
       const account = accountStore.find(a => a.accountId === segments[1]);
       if (!account) return sendJson(res, 404, { code: 'ACCOUNT_NOT_FOUND', message: 'accountId tidak ditemukan.' });
       const body = await readBody(req);
