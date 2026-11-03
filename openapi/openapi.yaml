@@ -15,14 +15,24 @@ info:
     ("Usulan kontrak identitas data") — menggantikan konvensi prefix
     (AKN-, EMP-, dst.) yang sebelumnya dipakai draf F-1.
 
-
     Update v0.4.0 (2026-10-28): seluruh nama skema, properti, nilai enum,
     operationId, dan path diseragamkan ke Bahasa Inggris (aturan dosen —
     penamaan field/skema/atribut/variabel database harus konsisten dalam
     satu bahasa supaya sinkron antar kelompok). Teks deskripsi/summary
     tetap Bahasa Indonesia. Lihat tabel pemetaan nama lama → nama baru
     di README repositori.
-  version: 0.4.0
+
+    Update v0.5.0 (2026-11-03): penyesuaian role atas permintaan kelompok
+    mitra. Direktur dan Komisaris TIDAK ditambah sebagai role baru —
+    keduanya dipetakan ke role yang sudah ada (Direktur = CEO, Komisaris =
+    COO). Kepala Finance belum terwakili role mana pun, jadi ditambahkan
+    role CFO. Technical Writer (TW) dan Technical Lead (TL) ditambahkan
+    sebagai role login sungguhan (bisa masuk lewat POST /auth/login dan
+    mendapat token). Role AM (Account Manager) sudah ada sejak versi
+    sebelumnya dan sekarang punya akun contoh di seed. Seluruh penambahan
+    bersifat aditif (nilai enum lama tidak diubah/dihapus), jadi tidak
+    memecah kompatibilitas (non-breaking) terhadap konsumen v0.4.x.
+  version: 0.5.0
   contact:
     name: Kelompok F-1 (Kelas F)
     email: nauval@example.invalid
@@ -379,7 +389,7 @@ components:
 
     RoleCode:
       type: string
-      enum: [CEO, COO, CTO, ADMIN, AM, PM, EMPLOYEE, SPECIALIST]
+      enum: [CEO, COO, CTO, CFO, ADMIN, AM, PM, EMPLOYEE, SPECIALIST, TW, TL]
 
     LoginRequest:
       type: object

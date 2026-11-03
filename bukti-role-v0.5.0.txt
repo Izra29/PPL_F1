@@ -1,0 +1,11 @@
+Bukti uji role baru -- v0.5.0 (2026-11-03), demo server http://127.0.0.1:4100
+Login password demo: Password123!
+
+POST /auth/login maelani.tw       -> 200, roleCode TW
+POST /auth/login amaliyah.tl      -> 200, roleCode TL
+POST /auth/login account.manager  -> 200, roleCode AM
+POST /accounts (token COO, roleCode CFO) -> 201, roleCode CFO, status active
+POST /accounts (token TL)         -> 403 INSUFFICIENT_PERMISSION
+POST /accounts (tanpa token)      -> 401 INVALID_TOKEN
+Catatan: akun yang dibuat lewat POST /accounts (mis. cfo.demo) belum bisa login
+di demo server karena password demo hanya ada untuk akun seed (batasan demo).
