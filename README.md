@@ -206,3 +206,18 @@ Catatan tambahan v0.5.0: respons `POST /auth/login` pada demo server sekarang ju
 memuat objek `account` (`accountId`, `name`, `roleCode`) sesuai `LoginResponse`
 di kontrak. Field datar `accountId` dan `roleCode` tetap dipertahankan supaya
 konsumen yang sudah memakainya tidak rusak.
+
+## Update (2026-11-04): daftar akun untuk semua role -- v0.6.0
+
+Atas permintaan kelompok lain (memilih peserta rapat dan PIC), `GET /accounts`
+sekarang bisa dibuka **semua role dengan token valid**, tidak hanya admin.
+
+| Pemanggil | Yang diterima |
+| --- | --- |
+| `COO` / `CTO` / `ADMIN` | Semua akun, field lengkap (`Account`), filter `?status=` dan `?search=` |
+| Role lain | Hanya akun `active`, field terbatas (`accountId`, `employeeId`, `name`, `roleCode`, `position`, `status`; tanpa `username` dan `email`), filter `?search=` |
+| Tanpa token / token salah | `401 INVALID_TOKEN` |
+
+`POST /accounts` dan `PUT /accounts/{accountId}` tetap hanya untuk `COO`/`CTO`/`ADMIN`.
+Perubahan ini melonggarkan akses sehingga **tidak memecah kompatibilitas**. Catatan:
+sebelum v0.6.0, `GET /accounts` ada di kontrak tetapi belum diimplementasikan di demo server.

@@ -27,6 +27,10 @@
 // Update v0.5.0 (2026-11-03): role CFO, TW, TL ditambahkan (TW/TL bisa login)
 // dan ada akun seed contoh untuk AM, TW, TL.
 //
+// Update v0.6.0 (2026-11-04): GET /accounts diimplementasikan dan dibuka untuk semua
+// role dengan token valid (non-admin hanya melihat akun active dengan field terbatas),
+// atas permintaan kelompok lain untuk memilih peserta rapat dan PIC.
+//
 // Jalankan: node demo/local-server.js
 // Server berjalan di http://127.0.0.1:4100
 
@@ -147,6 +151,29 @@ const server = http.createServer(async (req, res) => {
         accountId: account.accountId,
         roleCode: account.roleCode,
       });
+    }
+
+    // GET /accounts  (Daftar) -- v0.6.0: boleh dibuka SEMUA role dengan token valid.
+    //  - COO/CTO/ADMIN: melihat semua akun dengan field lengkap (Account), bisa filter ?status=
+    //  - role lain (anggota proyek, mis. untuk memilih peserta rapat/PIC): hanya akun
+    //    berstatus active, dengan field terbatas (UserIdentity: tanpa username/email).
+    //  Query: ?search= (cocok ke nama, username, email -- tidak peka huruf besar/kecil)
+    if (req.method === 'GET' && url.pathname === '/accounts') {
+      const check = verifyToken(req);
+      if (!check.ok) return sendJson(res, 401, { code: 'INVALID_TOKEN', message: check.reason });
+      const isManager = ACCOUNT_MANAGER_ROLES.includes(check.payload.roleCode);
+      const statusFilter = url.searchParams.get('status');
+      const search = (url.searchParams.get('search') || '').toLowerCase();
+      let list = accountStore;
+      if (!isManager) list = list.filter(a => a.status === 'active');
+      else if (statusFilter) list = list.filter(a => a.status === statusFilter);
+      if (search) {
+        list = list.filter(a => [a.name, a.username, a.email].some(v => (v || '').toLowerCase().includes(search)));
+      }
+      const items = list.map(a => isManager
+        ? { accountId: a.accountId, employeeId: a.employeeId, name: a.name, username: a.username, email: a.email, roleCode: a.roleCode, status: a.status, createdAt: a.createdAt || null }
+        : { accountId: a.accountId, employeeId: a.employeeId, name: a.name, roleCode: a.roleCode, position: a.position || null, status: a.status });
+      return sendJson(res, 200, items);
     }
 
     // POST /accounts  (Buat) — perlu token valid DAN role COO/CTO/ADMIN
