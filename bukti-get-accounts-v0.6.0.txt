@@ -1,0 +1,83 @@
+Bukti GET /accounts v0.6.0 (2026-11-04), demo server http://127.0.0.1:4100
+== tanpa token
+{"code":"INVALID_TOKEN","message":"Tokentidakada."}->401
+== role EMPLOYEE (dwi.saputra)
+[
+  {
+    "accountId": "01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a9f",
+    "name": "Super Admin",
+    "roleCode": "ADMIN",
+    "position": null,
+    "status": "active"
+  },
+  {
+    "accountId": "01929b4a-71f0-7c10-9a3d-5e2b8f1c4d60",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a90",
+    "name": "Yuril Salsabila",
+    "roleCode": "COO",
+    "position": null,
+    "status": "active"
+  },
+  {
+    "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a92",
+    "name": "Dwi Saputra",
+    "roleCode": "EMPLOYEE",
+    "position": "Staf Operasional",
+    "status": "active"
+  },
+  {
+    "accountId": "01929b4a-b234-7088-af45-3c4d5e6f7081",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a95",
+    "name": "Maelani (TW)",
+    "roleCode": "TW",
+    "position": null,
+    "status": "active"
+  },
+  {
+    "accountId": "01929b4a-c345-7199-bf56-4d5e6f708192",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a96",
+    "name": "Amaliyah (TL)",
+    "roleCode": "TL",
+    "position": null,
+    "status": "active"
+  },
+  {
+    "accountId": "01929b4a-d456-72aa-8c67-5f6a708192a3",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a97",
+    "name": "Account Manager (Demo)",
+    "roleCode": "AM",
+    "position": null,
+    "status": "active"
+  }
+]
+HTTP 200
+== role EMPLOYEE, ?search=yuril
+[
+  {
+    "accountId": "01929b4a-71f0-7c10-9a3d-5e2b8f1c4d60",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a90",
+    "name": "Yuril Salsabila",
+    "roleCode": "COO",
+    "position": null,
+    "status": "active"
+  }
+]
+HTTP 200
+== role TW (maelani.tw), ?status=locked (diabaikan)
+jumlah akun: 6
+== role COO, ?status=locked
+[
+  {
+    "accountId": "01929b4a-9012-7e66-8d23-1a2b3c4d5e60",
+    "employeeId": "01929b4a-5f10-7a22-9d44-3c8f1b2e7a93",
+    "name": "Amaliyah",
+    "username": "amaliyah",
+    "email": "amaliyah@anaheimnimbus.co.id",
+    "roleCode": "SPECIALIST",
+    "status": "locked",
+    "createdAt": null
+  }
+]
+HTTP 200

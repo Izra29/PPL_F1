@@ -32,7 +32,13 @@ info:
     sebelumnya dan sekarang punya akun contoh di seed. Seluruh penambahan
     bersifat aditif (nilai enum lama tidak diubah/dihapus), jadi tidak
     memecah kompatibilitas (non-breaking) terhadap konsumen v0.4.x.
-  version: 0.5.0
+
+    Update v0.6.0 (2026-11-04): GET /accounts dibuka untuk semua role dengan
+    token valid (sebelumnya hanya COO/CTO/Admin) atas permintaan kelompok
+    lain untuk memilih peserta rapat dan PIC. Non-admin hanya melihat akun
+    active dengan field terbatas. Perubahan ini melonggarkan akses dan tidak
+    mengubah bentuk respons untuk COO/CTO/Admin, sehingga non-breaking.
+  version: 0.6.0
   contact:
     name: Kelompok F-1 (Kelas F)
     email: nauval@example.invalid
@@ -179,11 +185,19 @@ paths:
       operationId: listAccounts
       tags: [Account]
       summary: Melihat daftar akun (API-F1-04 / FTR-F1-03)
-      description: Dipakai antarmuka manajemen akun COO/CTO/Admin.
+      description: >-
+        Sejak v0.6.0 dapat dibuka SEMUA role dengan token valid (sebelumnya
+        hanya COO/CTO/Admin), atas permintaan kelompok lain yang memakainya
+        untuk memilih peserta rapat dan PIC. COO/CTO/ADMIN menerima daftar
+        lengkap (skema Account) dan dapat memfilter dengan status. Role lain
+        hanya menerima akun berstatus active dengan field terbatas (skema
+        UserIdentity; tanpa username dan email), dan parameter status
+        diabaikan.
       parameters:
         - name: status
           in: query
           required: false
+          description: Hanya berlaku untuk COO/CTO/ADMIN.
           schema:
             $ref: '#/components/schemas/AccountStatus'
         - name: search
@@ -194,15 +208,17 @@ paths:
             type: string
       responses:
         '200':
-          description: Daftar akun.
+          description: Daftar akun (bentuk item bergantung pada role pemanggil, lihat deskripsi).
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Account'
-        '403':
-          description: Pemanggil bukan COO/CTO/Admin.
+                  oneOf:
+                    - $ref: '#/components/schemas/Account'
+                    - $ref: '#/components/schemas/UserIdentity'
+        '401':
+          description: Token tidak ada atau tidak valid.
           content:
             application/json:
               schema:
