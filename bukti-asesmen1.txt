@@ -1,0 +1,86 @@
+Skenario demo asesmen 1 -- F-1 -- 2026-11-04T08:35:30.577Z -- http://127.0.0.1:4100
+
+Jumlah akun awal (seed): 8
+
+=== UJI-01 Berhasil: login -> identitas -> buat akun -> baca ulang -> nonaktifkan ===
+[LULUS] U1.1 Login ADMIN
+        POST /auth/login (super.admin) -> HTTP 200 (harapan 200)
+        {"accessToken":"eyJhbGciOiJIUz...[disamarkan]","tokenType":"Bearer","expiresIn":3600,"account":{"accountId":"01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1","name":"Super Admin","roleCode":"ADMIN"},"accountId":"01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1","roleCode":"ADMIN"}
+[LULUS] U1.2 Identitas akun sendiri
+        GET /identity/accounts/{accountId} -> HTTP 200 (harapan 200)
+        {"accountId":"01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1","employeeId":"01929b4a-5f10-7a22-9d44-3c8f1b2e7a9f","name":"Super Admin","roleCode":"ADMIN","position":null,"status":"active"}
+[LULUS] U1.3 Buat akun role CFO
+        POST /accounts (token ADMIN) -> HTTP 201 (harapan 201)
+        {"accountId":"01a1a5b2-f2e6-7af5-a584-9980a65a10b5","employeeId":"01929b4a-5f10-7a22-9d44-3c8f1b2e7aa0","username":"demo.cfo","email":"demo.cfo@anaheimnimbus.co.id","name":"Pegawai Baru (Demo)","roleCode":"CFO","status":"active","createdAt":"2026-11-04T08:35:30.663Z"}
+[LULUS] U1.4 Baca ulang peran akun baru
+        GET /accounts/{newId}/role -> HTTP 200 (harapan 200)
+        {"accountId":"01a1a5b2-f2e6-7af5-a584-9980a65a10b5","roleCode":"CFO","status":"active"}
+[LULUS] U1.5 Nonaktifkan akun
+        PUT /accounts/{newId} {status: inactive} -> HTTP 200 (harapan 200)
+        {"accountId":"01a1a5b2-f2e6-7af5-a584-9980a65a10b5","employeeId":"01929b4a-5f10-7a22-9d44-3c8f1b2e7aa0","username":"demo.cfo","email":"demo.cfo@anaheimnimbus.co.id","name":"Pegawai Baru (Demo)","roleCode":"CFO","status":"inactive","createdAt":"2026-11-04T08:35:30.663Z"}
+[LULUS] U1.6 Baca ulang status
+        GET /accounts/{newId}/role -> HTTP 200 (harapan 200)
+        {"accountId":"01a1a5b2-f2e6-7af5-a584-9980a65a10b5","roleCode":"CFO","status":"inactive"}
+
+=== UJI-02 Ditolak: kredensial/input tidak sah ===
+[LULUS] U2.1 Password salah
+        POST /auth/login -> HTTP 401 (harapan 401)
+        {"code":"INVALID_CREDENTIALS","message":"Email/username atau password salah."}
+[LULUS] U2.2 Akun terkunci
+        POST /auth/login (amaliyah) -> HTTP 403 (harapan 403)
+        {"code":"ACCOUNT_LOCKED","message":"Akun terkunci, coba lagi nanti."}
+[LULUS] U2.3 Akun nonaktif
+        POST /auth/login (icha.aprilia) -> HTTP 403 (harapan 403)
+        {"code":"ACCOUNT_INACTIVE","message":"Akun nonaktif, hubungi admin."}
+[LULUS] U2.4 Buat akun tanpa token
+        POST /accounts (tanpa Authorization) -> HTTP 401 (harapan 401)
+        {"code":"INVALID_TOKEN","message":"Token tidak ada."}
+[LULUS] U2.5 Field wajib kosong (roleCode)
+        POST /accounts (token ADMIN, tanpa roleCode) -> HTTP 400 (harapan 400)
+        {"code":"REQUIRED_FIELD_MISSING","message":"employeeId dan roleCode wajib diisi."}
+[LULUS] U2.6 Username sudah dipakai
+        POST /accounts (username demo.cfo) -> HTTP 409 (harapan 409)
+        {"code":"USERNAME_TAKEN","message":"Username atau email sudah terdaftar."}
+[LULUS] U2.7 Data tidak berubah setelah penolakan
+        GET /accounts (ADMIN) -> HTTP 200 (harapan 200)
+        {"jumlahAkun":9,"diharapkan":9}
+        (seed + 1 akun demo.cfo dari U1.3; penolakan U2.4-U2.6 tidak menambah akun)
+
+=== UJI-03 Akses peran ===
+[LULUS] U3.1 EMPLOYEE membuat akun
+        POST /accounts (token EMPLOYEE) -> HTTP 403 (harapan 403)
+        {"code":"INSUFFICIENT_PERMISSION","message":"Pemanggil bukan COO/CTO/Admin."}
+[LULUS] U3.2 TL mengubah akun
+        PUT /accounts/{newId} (token TL) -> HTTP 403 (harapan 403)
+        {"code":"INSUFFICIENT_PERMISSION","message":"Pemanggil bukan COO/CTO/Admin."}
+[LULUS] U3.3 Data tetap utuh setelah PUT ditolak
+        GET /accounts/{newId}/role -> HTTP 200 (harapan 200)
+        {"accountId":"01a1a5b2-f2e6-7af5-a584-9980a65a10b5","roleCode":"CFO","status":"inactive"}
+[LULUS] U3.4 EMPLOYEE melihat daftar akun (hanya active, tanpa email/username)
+        GET /accounts (token EMPLOYEE) -> HTTP 200 (harapan 200)
+        {"jumlah":6,"hanyaActiveTanpaEmail":true}
+[LULUS] U3.5 ADMIN melihat daftar lengkap
+        GET /accounts (token ADMIN) -> HTTP 200 (harapan 200)
+        {"jumlah":9,"lengkapDenganEmailDanSemuaStatus":true}
+[LULUS] U3.6-TW Login role baru TW
+        POST /auth/login (maelani.tw) -> HTTP 200 (harapan 200)
+        {"accessToken":"eyJhbGciOiJIUz...[disamarkan]","tokenType":"Bearer","expiresIn":3600,"account":{"accountId":"01929b4a-b234-7088-af45-3c4d5e6f7081","name":"Maelani (TW)","roleCode":"TW"},"accountId":"01929b4a-b234-7088-af45-3c4d5e6f7081","roleCode":"TW"}
+[LULUS] U3.6-TL Login role baru TL
+        POST /auth/login (amaliyah.tl) -> HTTP 200 (harapan 200)
+        {"accessToken":"eyJhbGciOiJIUz...[disamarkan]","tokenType":"Bearer","expiresIn":3600,"account":{"accountId":"01929b4a-c345-7199-bf56-4d5e6f708192","name":"Amaliyah (TL)","roleCode":"TL"},"accountId":"01929b4a-c345-7199-bf56-4d5e6f708192","roleCode":"TL"}
+[LULUS] U3.6-AM Login role baru AM
+        POST /auth/login (account.manager) -> HTTP 200 (harapan 200)
+        {"accessToken":"eyJhbGciOiJIUz...[disamarkan]","tokenType":"Bearer","expiresIn":3600,"account":{"accountId":"01929b4a-d456-72aa-8c67-5f6a708192a3","name":"Account Manager (Demo)","roleCode":"AM"},"accountId":"01929b4a-d456-72aa-8c67-5f6a708192a3","roleCode":"AM"}
+
+=== UJI-04 Dependensi dan token bermasalah ===
+[LULUS] U4.1 accountId tidak dikenal
+        GET /identity/accounts/{id-acak} -> HTTP 404 (harapan 404)
+        {"code":"ACCOUNT_NOT_FOUND","message":"accountId tidak ditemukan."}
+[LULUS] U4.2 Token rusak
+        GET /accounts/{id}/role (token acak) -> HTTP 401 (harapan 401)
+        {"code":"INVALID_TOKEN","message":"Token tidak valid: invalid token"}
+[LULUS] U4.3 Token kedaluwarsa
+        GET /accounts/{id}/role (token expired) -> HTTP 401 (harapan 401)
+        {"code":"INVALID_TOKEN","message":"Token tidak valid: jwt expired"}
+
+Ringkasan: SEMUA LULUS

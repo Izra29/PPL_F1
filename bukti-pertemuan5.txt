@@ -1,6 +1,6 @@
 === B-00a. Login valid (dwi.saputra) ===
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS04M2ExLTdkNTUtOGIxMi05ZjdjMmU0YTZiMTAiLCJyb2xlQ29kZSI6IkVNUExPWUVFIiwiaWF0IjoxNzkzMjQ1OTY4LCJleHAiOjE3OTMyNDk1Njh9.EKBNipB3qIs52o-F_Xk6B0UZ2ncBEYYcNXUipgNpY6s",
+  "accessToken": "eyJhbGciOiJIUz...[disamarkan]",
   "tokenType": "Bearer",
   "expiresIn": 3600,
   "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
