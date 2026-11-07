@@ -251,5 +251,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-const PORT = 4100;
-server.listen(PORT, () => console.log(`Demo server (in-memory) F-1 berjalan di http://127.0.0.1:${PORT}`));
+// PORT dibaca dari environment (dipakai layanan hosting seperti Render); bawaan 4100 untuk lokal.
+const PORT = Number(process.env.PORT) || 4100;
+server.listen(PORT, '0.0.0.0', () => console.log(`Demo server (in-memory) F-1 berjalan di port ${PORT} (lokal: http://127.0.0.1:${PORT})`));

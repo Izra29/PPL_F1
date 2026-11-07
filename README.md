@@ -221,3 +221,35 @@ sekarang bisa dibuka **semua role dengan token valid**, tidak hanya admin.
 `POST /accounts` dan `PUT /accounts/{accountId}` tetap hanya untuk `COO`/`CTO`/`ADMIN`.
 Perubahan ini melonggarkan akses sehingga **tidak memecah kompatibilitas**. Catatan:
 sebelum v0.6.0, `GET /accounts` ada di kontrak tetapi belum diimplementasikan di demo server.
+
+## Demo asesmen pertama (pertemuan 7): menjalankan dan mengulang
+
+Prasyarat: Node.js 18+. Versi yang dinilai: lihat commit/tag yang dicantumkan di laporan Asesmen 1.
+
+```bash
+npm install
+node demo/local-server.js          # terminal 1 -- server di http://127.0.0.1:4100, data = seed
+node test/asesmen1-demo.js         # terminal 2 -- menjalankan UJI-01 s.d. UJI-04, token disamarkan
+```
+
+- Data awal: `seed/seed-accounts.json` (11 peran, 8 akun; semua password demo `Password123!`).
+- Mengembalikan keadaan awal: matikan server (`Ctrl+C`), jalankan lagi -- data in-memory kembali ke seed.
+  Jalankan skenario hanya pada server yang baru dinyalakan (skenario membuat akun `demo.cfo`).
+- Hasil terakhir yang dicatat: `bukti-asesmen1.txt`. Akun uji: `super.admin` (ADMIN), `yuril.salsabila` (COO),
+  `dwi.saputra` (EMPLOYEE), `maelani.tw` (TW), `amaliyah.tl` (TL), `account.manager` (AM),
+  `amaliyah` (locked), `icha.aprilia` (inactive).
+- Token pada berkas bukti sudah disamarkan.
+
+## Deploy ke hosting (agar bisa diakses kelompok lain)
+
+Server demo siap di-host di layanan Node mana pun (mis. Render, Railway). Pengaturan:
+
+| Pengaturan | Nilai |
+| --- | --- |
+| Build command | `npm install` |
+| Start command | `npm start` |
+| Environment variable | `JWT_SECRET` = rahasia JWT yang disepakati (bila tidak diisi dipakai nilai demo di `.env.example`) |
+| Port | otomatis dari `PORT` yang disediakan hosting |
+
+Catatan: data in-memory (hilang saat server restart/tidur); semua password akun seed adalah
+data demo `Password123!`. Jangan dipakai sebagai layanan produksi.

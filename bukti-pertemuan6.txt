@@ -1,6 +1,6 @@
 === C-00. Login sebagai ADMIN (super.admin) -- buat token akses sah ===
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS02ZTJhLTdiM2YtOGM3MS0wYWI0ZTNkOWYyYTEiLCJyb2xlQ29kZSI6IkFETUlOIiwiaWF0IjoxNzkzNjI2OTA5LCJleHAiOjE3OTM2MzA1MDl9.WQSOYyRqiJ9OOc9zch4h30HqjbcXuQB3kcLhmGMMdZ0",
+  "accessToken": "eyJhbGciOiJIUz...[disamarkan]",
   "tokenType": "Bearer",
   "expiresIn": 3600,
   "accountId": "01929b4a-6e2a-7b3f-8c71-0ab4e3d9f2a1",
@@ -10,7 +10,7 @@ HTTP 200
 
 === C-01. Login sebagai EMPLOYEE (dwi.saputra) -- token non-admin, dipakai buat kasus izin tidak cukup ===
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50SWQiOiIwMTkyOWI0YS04M2ExLTdkNTUtOGIxMi05ZjdjMmU0YTZiMTAiLCJyb2xlQ29kZSI6IkVNUExPWUVFIiwiaWF0IjoxNzkzNjI2OTA5LCJleHAiOjE3OTM2MzA1MDl9.cFPcIWk9SKp0xwbAdNzCkQcQTmnaAw-Wbf831VUeggA",
+  "accessToken": "eyJhbGciOiJIUz...[disamarkan]",
   "tokenType": "Bearer",
   "expiresIn": 3600,
   "accountId": "01929b4a-83a1-7d55-8b12-9f7c2e4a6b10",
